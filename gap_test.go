@@ -401,3 +401,19 @@ func TestReadIntoEmpty(t *testing.T) {
 		t.Error("There should be no I/O error")
 	}
 }
+
+func TestReadFromEnd(t *testing.T) {
+
+	buf := NewBuffer()
+	buf.Write(TEXT)
+
+	p := make([]byte, buf.Len())
+	n, err := buf.Read(p)
+
+	if n != 0 {
+		t.Error("Nothing should be read from the end of a buffer")
+	}
+	if err != io.EOF {
+		t.Error("Reading from a buffer's end should return io.EOF")
+	}
+}

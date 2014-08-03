@@ -340,6 +340,7 @@ func TestReadUntilEnd(t *testing.T) {
 	p := make([]byte, buf.Len())
 	n, err := buf.Read(p)
 	if n != buf.Len()-startPos {
+
 		t.Error(
 			"The number of bytes read should be equal the distance from the " +
 				"starting position to the end",
@@ -347,5 +348,22 @@ func TestReadUntilEnd(t *testing.T) {
 	}
 	if err != io.EOF {
 		t.Error("Reading up to the buffer's end should return io.EOF")
+	}
+}
+
+func TestReadAndFill(t *testing.T) {
+
+	buf := NewBuffer()
+	buf.Write(TEXT)
+	buf.MoveTo(buf.Len() / 3)
+
+	p := make([]byte, buf.Len()/3)
+	n, err := buf.Read(p)
+
+	if n != len(p) {
+		t.Error("The slice should be filled")
+	}
+	if err != nil {
+		t.Error("There should be no I/O error")
 	}
 }

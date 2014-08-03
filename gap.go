@@ -66,6 +66,7 @@ func (buf *Buffer) MoveBy(delta int) int {
 
 func (buf *Buffer) Read(p []byte) (n int, err error) {
 	n = copy(p, buf.data[buf.pos:])
+	buf.pos += n
 	if buf.Pos() == buf.Len() {
 		err = io.EOF
 	}

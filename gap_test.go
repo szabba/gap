@@ -451,3 +451,20 @@ func TestReadFromStartAndFill(t *testing.T) {
 		t.Error("There should be no I/O error")
 	}
 }
+
+func TestReadFromStartIntoEmpty(t *testing.T) {
+
+	buf := NewBuffer()
+	buf.Write(TEXT)
+	buf.MoveTo(BufferStart)
+
+	p := []byte(nil)
+	n, err := buf.Read(p)
+
+	if n != 0 {
+		t.Error("Nothing should be read into an empty slice")
+	}
+	if err != nil {
+		t.Error("There should be no I/O error")
+	}
+}

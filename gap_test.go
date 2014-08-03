@@ -417,3 +417,20 @@ func TestReadFromEnd(t *testing.T) {
 		t.Error("Reading from a buffer's end should return io.EOF")
 	}
 }
+
+func TestReadFromEndIntoEmpty(t *testing.T) {
+
+	buf := NewBuffer()
+	buf.Write(TEXT)
+
+	p := []byte(nil)
+	n, err := buf.Read(p)
+
+	if n != 0 {
+		t.Error("Nothing should be read from the end of a buffer")
+		t.Error("Nothing should be read into an empty slice")
+	}
+	if err != io.EOF {
+		t.Error("Reading from a buffer's end should return io.EOF")
+	}
+}

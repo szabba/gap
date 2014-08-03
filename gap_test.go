@@ -367,3 +367,20 @@ func TestReadAndFill(t *testing.T) {
 		t.Error("There should be no I/O error")
 	}
 }
+
+func TestReadUntilEndAndFill(t *testing.T) {
+
+	buf := NewBuffer()
+	buf.Write(TEXT)
+	buf.MoveTo(buf.Len() / 3)
+
+	p := make([]byte, buf.Len()-buf.Pos())
+	n, err := buf.Read(p)
+
+	if n != len(p) {
+		t.Error("The slice should be filled")
+	}
+	if err != io.EOF {
+		t.Error("Reading up to the buffer's end should return io.EOF")
+	}
+}

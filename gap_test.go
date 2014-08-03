@@ -384,3 +384,20 @@ func TestReadUntilEndAndFill(t *testing.T) {
 		t.Error("Reading up to the buffer's end should return io.EOF")
 	}
 }
+
+func TestReadIntoEmpty(t *testing.T) {
+
+	buf := NewBuffer()
+	buf.Write(TEXT)
+	buf.MoveTo(buf.Len() / 2)
+
+	p := []byte(nil)
+	n, err := buf.Read(p)
+
+	if n != 0 {
+		t.Error("Nothing should be read into an empty slice")
+	}
+	if err != nil {
+		t.Error("There should be no I/O error")
+	}
+}

@@ -272,31 +272,33 @@ func TestDontMoveRightFromEmptyBufEnd(t *testing.T) {
 	}
 }
 
+func testRead(t *testing.T, from *Buffer, into []byte, howMuch int, whatErr error) {
+
+	n, err := from.Read(into)
+	if n != howMuch {
+		t.Errorf("Expected to read %d bytes, not %d", howMuch, n)
+	}
+	if err != whatErr {
+		if whatErr == nil {
+			t.Error("There should be no I/O errors")
+		} else if whatErr == io.EOF {
+			t.Error("The error should be io.EOF")
+		}
+	}
+}
+
 func TestReadFromEmpty(t *testing.T) {
 
 	buf, p := NewBuffer(), make([]byte, len(TEXT))
 
-	n, err := buf.Read(p)
-	if n != 0 {
-		t.Error("Nothing should be read from an empty buffer")
-	}
-	if err != io.EOF {
-		t.Error("A Read from an empty buffer should return io.EOF")
-	}
+	testRead(t, buf, p, 0, io.EOF)
 }
 
 func TestReadFromEmptyIntoEmpty(t *testing.T) {
 
 	buf, p := NewBuffer(), []byte(nil)
 
-	n, err := buf.Read(p)
-	if n != 0 {
-		t.Error("Nothing should be read from an empty buffer")
-		t.Error("Nothing should be read into an empty slice")
-	}
-	if err != io.EOF {
-		t.Error("A Read from an empty buffer should return io.EOF")
-	}
+	testRead(t, buf, p, 0, io.EOF)
 }
 
 func TestReadAll(t *testing.T) {
@@ -306,13 +308,8 @@ func TestReadAll(t *testing.T) {
 	buf.MoveTo(BufferStart)
 
 	p := make([]byte, buf.Len()*3/2)
-	n, err := buf.Read(p)
-	if n != buf.Len() {
-		t.Error("The contents of the entire buffer should've been read")
-	}
-	if err != io.EOF {
-		t.Error("Reading the entire buffer contets should return io.EOF")
-	}
+
+	testRead(t, buf, p, buf.Len(), io.EOF)
 }
 
 func TestReadAllAndFill(t *testing.T) {
@@ -322,14 +319,8 @@ func TestReadAllAndFill(t *testing.T) {
 	buf.MoveTo(BufferStart)
 
 	p := make([]byte, buf.Len())
-	n, err := buf.Read(p)
 
-	if n != len(p) {
-		t.Error("The slice should be filled")
-	}
-	if err != io.EOF {
-		t.Error("Reading the entire buffer contets should return io.EOF")
-	}
+	testRead(t, buf, p, len(p), io.EOF)
 }
 
 func TestReadUntilEnd(t *testing.T) {
@@ -340,17 +331,8 @@ func TestReadUntilEnd(t *testing.T) {
 	startPos := buf.Pos()
 
 	p := make([]byte, buf.Len())
-	n, err := buf.Read(p)
-	if n != buf.Len()-startPos {
 
-		t.Error(
-			"The number of bytes read should be equal the distance from the " +
-				"starting position to the end",
-		)
-	}
-	if err != io.EOF {
-		t.Error("Reading up to the buffer's end should return io.EOF")
-	}
+	testRead(t, buf, p, buf.Len()-startPos, io.EOF)
 }
 
 func TestReadAndFill(t *testing.T) {
@@ -360,14 +342,8 @@ func TestReadAndFill(t *testing.T) {
 	buf.MoveTo(buf.Len() / 3)
 
 	p := make([]byte, buf.Len()/3)
-	n, err := buf.Read(p)
 
-	if n != len(p) {
-		t.Error("The slice should be filled")
-	}
-	if err != nil {
-		t.Error("There should be no I/O error")
-	}
+	testRead(t, buf, p, len(p), nil)
 }
 
 func TestReadUntilEndAndFill(t *testing.T) {
@@ -377,14 +353,8 @@ func TestReadUntilEndAndFill(t *testing.T) {
 	buf.MoveTo(buf.Len() / 3)
 
 	p := make([]byte, buf.Len()-buf.Pos())
-	n, err := buf.Read(p)
 
-	if n != len(p) {
-		t.Error("The slice should be filled")
-	}
-	if err != io.EOF {
-		t.Error("Reading up to the buffer's end should return io.EOF")
-	}
+	testRead(t, buf, p, len(p), io.EOF)
 }
 
 func TestReadIntoEmpty(t *testing.T) {
@@ -394,14 +364,8 @@ func TestReadIntoEmpty(t *testing.T) {
 	buf.MoveTo(buf.Len() / 2)
 
 	p := []byte(nil)
-	n, err := buf.Read(p)
 
-	if n != 0 {
-		t.Error("Nothing should be read into an empty slice")
-	}
-	if err != nil {
-		t.Error("There should be no I/O error")
-	}
+	testRead(t, buf, p, len(p), nil)
 }
 
 func TestReadFromEnd(t *testing.T) {
@@ -410,14 +374,8 @@ func TestReadFromEnd(t *testing.T) {
 	buf.Write(TEXT)
 
 	p := make([]byte, buf.Len())
-	n, err := buf.Read(p)
 
-	if n != 0 {
-		t.Error("Nothing should be read from the end of a buffer")
-	}
-	if err != io.EOF {
-		t.Error("Reading from a buffer's end should return io.EOF")
-	}
+	testRead(t, buf, p, 0, io.EOF)
 }
 
 func TestReadFromEndIntoEmpty(t *testing.T) {
@@ -426,15 +384,8 @@ func TestReadFromEndIntoEmpty(t *testing.T) {
 	buf.Write(TEXT)
 
 	p := []byte(nil)
-	n, err := buf.Read(p)
 
-	if n != 0 {
-		t.Error("Nothing should be read from the end of a buffer")
-		t.Error("Nothing should be read into an empty slice")
-	}
-	if err != io.EOF {
-		t.Error("Reading from a buffer's end should return io.EOF")
-	}
+	testRead(t, buf, p, 0, io.EOF)
 }
 
 func TestReadFromStartAndFill(t *testing.T) {
@@ -444,14 +395,8 @@ func TestReadFromStartAndFill(t *testing.T) {
 	buf.MoveTo(BufferStart)
 
 	p := make([]byte, buf.Len()/2)
-	n, err := buf.Read(p)
 
-	if n != len(p) {
-		t.Error("The slice should be filled")
-	}
-	if err != nil {
-		t.Error("There should be no I/O error")
-	}
+	testRead(t, buf, p, len(p), nil)
 }
 
 func TestReadFromStartIntoEmpty(t *testing.T) {
@@ -461,12 +406,6 @@ func TestReadFromStartIntoEmpty(t *testing.T) {
 	buf.MoveTo(BufferStart)
 
 	p := []byte(nil)
-	n, err := buf.Read(p)
 
-	if n != 0 {
-		t.Error("Nothing should be read into an empty slice")
-	}
-	if err != nil {
-		t.Error("There should be no I/O error")
-	}
+	testRead(t, buf, p, len(p), nil)
 }

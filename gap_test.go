@@ -274,10 +274,17 @@ func TestDontMoveRightFromEmptyBufEnd(t *testing.T) {
 
 func testRead(t *testing.T, from *Buffer, into []byte, howMuch int, whatErr error) {
 
+	startPos := from.Pos()
 	n, err := from.Read(into)
+
 	if n != howMuch {
 		t.Errorf("Expected to read %d bytes, not %d", howMuch, n)
+	} else {
+		if from.Pos()-startPos != n {
+			t.Error("Position should change by the number of bytes read")
+		}
 	}
+
 	if err != whatErr {
 		if whatErr == nil {
 			t.Error("There should be no I/O errors")

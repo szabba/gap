@@ -1,7 +1,9 @@
 package gap
 
-import "io"
-import "testing"
+import (
+	"io"
+	"testing"
+)
 
 func TestNewBuffer(t *testing.T) {
 
